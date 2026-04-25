@@ -1,38 +1,43 @@
 /* ─── Smart type detector ─── */
+export const TYPE_METADATA = {
+  'jwt': { label: 'JWT Token', color: '#7c3aed' },
+  'uuid': { label: 'UUID', color: '#2563eb' },
+  'json': { label: 'JSON', color: '#059669' },
+  'xml': { label: 'XML', color: '#dc2626' },
+  'url': { label: 'URL', color: '#0891b2' },
+  'timestamp': { label: 'Unix Timestamp', color: '#0891b2' },
+  'color': { label: 'Hex Color', color: '#db2777' },
+  'cron': { label: 'Cron Expression', color: '#7c3aed' },
+  'base64': { label: 'Base64', color: '#d97706' },
+  'markdown': { label: 'Markdown', color: '#2563eb' }
+}
+
 export function detectInputType(raw) {
   const s = raw.trim()
   if (!s || s.length < 4) return null
 
-  if (/^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*$/.test(s))
-    return { label: 'JWT Token', toolId: 'jwt-decoder', color: '#7c3aed' }
-  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s))
-    return { label: 'UUID', toolId: 'uuid-generator', color: '#2563eb' }
+  if (/^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*$/.test(s)) return 'jwt'
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)) return 'uuid'
   if (s[0] === '{' || s[0] === '[') {
-    try { JSON.parse(s); return { label: 'JSON', toolId: 'json-formatter', color: '#059669' } } catch {}
+    try { JSON.parse(s); return 'json' } catch {}
   }
-  if (s[0] === '<' && s.includes('>'))
-    return { label: 'XML', toolId: 'xml-formatter', color: '#dc2626' }
-  if (/^https?:\/\//i.test(s))
-    return { label: 'URL', toolId: 'url-encoder', color: '#0891b2' }
-  if (/^\d{10}$/.test(s) || /^\d{13}$/.test(s))
-    return { label: 'Unix Timestamp', toolId: 'timestamp', color: '#0891b2' }
-  if (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(s))
-    return { label: 'Hex Color', toolId: 'color-converter', color: s }
-  if (/^[\d*/,\-?LW#]+(\s+[\d*/,\-?LW#]+){4,5}$/.test(s))
-    return { label: 'Cron Expression', toolId: 'cron-parser', color: '#7c3aed' }
+  if (s[0] === '<' && s.includes('>')) return 'xml'
+  if (/^https?:\/\//i.test(s)) return 'url'
+  if (/^\d{10}$/.test(s) || /^\d{13}$/.test(s)) return 'timestamp'
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(s)) return 'color'
+  if (/^[\d*/,\-?LW#]+(\s+[\d*/,\-?LW#]+){4,5}$/.test(s)) return 'cron'
   if (/^[A-Za-z0-9+/]+=*$/.test(s) && s.length >= 8 && s.length % 4 === 0) {
-    try { const d = atob(s); if (d.length > 0) return { label: 'Base64', toolId: 'base64', color: '#d97706' } } catch {}
+    try { const d = atob(s); if (d.length > 0) return 'base64' } catch {}
   }
-  if (/^#{1,6}\s/.test(s) || s.includes('```'))
-    return { label: 'Markdown', toolId: 'markdown-preview', color: '#2563eb' }
+  if (/^#{1,6}\s/.test(s) || s.includes('```')) return 'markdown'
   return null
 }
 
 /* ─── Inline output computer ─── */
-export function computeOutput(input, label) {
+export function computeOutput(input, type) {
   const s = input.trim()
   try {
-    if (label === 'JWT Token') {
+    if (type === 'jwt') {
       const [h, p] = s.split('.')
       const b64 = x => x.replace(/-/g, '+').replace(/_/g, '/')
       const header  = JSON.parse(atob(b64(h)))
@@ -47,13 +52,13 @@ export function computeOutput(input, label) {
       if (payload.exp) lines.push(`  exp → ${new Date(payload.exp * 1000).toUTCString()}`)
       return lines.join('\n')
     }
-    if (label === 'JSON') {
+    if (type === 'json') {
       return JSON.stringify(JSON.parse(s), null, 2)
     }
-    if (label === 'Base64') {
+    if (type === 'base64') {
       return atob(s)
     }
-    if (label === 'URL') {
+    if (type === 'url') {
       const url = new URL(s)
       const params = Object.fromEntries(url.searchParams)
       return JSON.stringify({
@@ -65,7 +70,7 @@ export function computeOutput(input, label) {
         hash:     url.hash || '(none)',
       }, null, 2)
     }
-    if (label === 'Unix Timestamp') {
+    if (type === 'timestamp') {
       const n  = Number(s)
       const ms = s.length === 10 ? n * 1000 : n
       const d  = new Date(ms)
@@ -77,7 +82,7 @@ export function computeOutput(input, label) {
         `Unix s:  ${Math.floor(ms / 1000)}`,
       ].join('\n')
     }
-    if (label === 'Hex Color') {
+    if (type === 'color') {
       const hex = s.replace('#', '').padEnd(6, '0')
       const r = parseInt(hex.slice(0, 2), 16)
       const g = parseInt(hex.slice(2, 4), 16)
@@ -104,7 +109,7 @@ export function computeOutput(input, label) {
         `R: ${r}  G: ${g}  B: ${b}`,
       ].join('\n')
     }
-    if (label === 'UUID') {
+    if (type === 'uuid') {
       const parts = s.split('-')
       const version = parseInt(parts[2][0])
       return [
@@ -114,7 +119,7 @@ export function computeOutput(input, label) {
         `Segment: ${parts.join(' — ')}`,
       ].join('\n')
     }
-    if (label === 'Cron Expression') {
+    if (type === 'cron') {
       const fields = ['Minute', 'Hour', 'Day of Month', 'Month', 'Day of Week', 'Year (opt)']
       return s.split(/\s+/).map((p, i) => `${(fields[i] || '?').padEnd(14)}: ${p}`).join('\n')
     }

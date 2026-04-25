@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Zap, X, Copy, ExternalLink, Search, Star, ShieldCheck, Lock, Cpu, CheckCircle2, ClipboardPaste, ArrowRight, Wand2 } from 'lucide-react'
 import useStore from '../store'
 import { toolCategories, allTools } from '../utils/toolConfig'
-import { detectInputType, computeOutput } from '../utils/smartLogic'
+import { detectInputType, computeOutput, TYPE_METADATA } from '../utils/smartLogic'
 
 const h2r = (hex, a = 0.1) => {
   const safe = hex.startsWith('#') && hex.length >= 7 ? hex : '#4f46e5'
@@ -62,12 +62,12 @@ export default function Home() {
   
   const [smartInput, setSmartInput] = useState(lastSmartInput || '')
   
+  // smartResult now holds the full type metadata + matched tools list
   const [smartResult, setSmartResult] = useState(null)
   const [smartOutput, setSmartOutput] = useState('')
   const [copied, setCopied] = useState(false)
   const inputRef = useRef(null)
 
-  // Detection Flow State
   const [detectStep, setDetectStep] = useState(0)
   const [demoIdx, setDemoIdx] = useState(0)
 
@@ -106,15 +106,25 @@ export default function Home() {
     
     const t1 = setTimeout(() => {
       if (!isActive) return;
-      const result = detectInputType(smartInput)
-      if (!result) {
-        setSmartResult(null)
+      const typeStr = detectInputType(smartInput)
+      
+      if (!typeStr) {
+        setSmartResult({ error: 'No supported tool found' })
         setSmartOutput('')
-        setDetectStep(0)
+        setDetectStep(4) // Skip to done
         return
       }
       
-      setSmartResult(result)
+      const meta = TYPE_METADATA[typeStr]
+      // Map detection to actual tools via config
+      const matchedTools = allTools.filter(t => t.type === typeStr)
+      
+      setSmartResult({
+        type: typeStr,
+        label: meta.label,
+        color: typeStr === 'color' ? smartInput.trim() : meta.color,
+        matchedTools
+      })
       setDetectStep(2) 
       
       setTimeout(() => {
@@ -123,7 +133,7 @@ export default function Home() {
         
         setTimeout(() => {
           if (!isActive) return;
-          setSmartOutput(computeOutput(smartInput, result.label))
+          setSmartOutput(computeOutput(smartInput, typeStr))
           setDetectStep(4) 
         }, 250)
       }, 250)
@@ -148,6 +158,10 @@ export default function Home() {
     } catch (e) {
       console.error('Failed to read clipboard', e)
     }
+  }
+
+  const handleAutoNavigate = (route) => {
+    if (route) navigate(route)
   }
 
   const tabs = ['All', 'Favorites', ...toolCategories.map(c => c.name)]
@@ -187,25 +201,25 @@ export default function Home() {
 
   const sections = getSections()
 
-  const getActionHint = (label) => {
-    if (label === 'JSON') return 'Formatted instantly'
-    if (label === 'JWT Token') return 'Decoded instantly'
-    if (label === 'Base64') return 'Decoded instantly'
-    if (label === 'Hex Color') return 'Converted instantly'
-    if (label === 'Cron Expression') return 'Parsed instantly'
-    if (label === 'Unix Timestamp') return 'Converted instantly'
-    if (label === 'Markdown') return 'Preview ready'
-    if (label === 'URL') return 'Parsed instantly'
+  const getActionHint = (type) => {
+    if (type === 'json') return 'Formatted instantly'
+    if (type === 'jwt') return 'Decoded instantly'
+    if (type === 'base64') return 'Decoded instantly'
+    if (type === 'color') return 'Converted instantly'
+    if (type === 'cron') return 'Parsed instantly'
+    if (type === 'timestamp') return 'Converted instantly'
+    if (type === 'markdown') return 'Preview ready'
+    if (type === 'url') return 'Parsed instantly'
     return 'Preview ready'
   }
 
-  const getOutputLabel = (label) => {
-    if (label === 'Markdown') return 'Preview'
-    if (label === 'JSON') return 'Formatted Output'
-    if (label === 'JWT Token') return 'Decoded Payload'
-    if (label === 'Base64') return 'Decoded Output'
-    if (label === 'URL') return 'Encoded / Decoded Output'
-    if (label === 'Hex Color') return 'Converted Output'
+  const getOutputLabel = (type) => {
+    if (type === 'markdown') return 'Preview'
+    if (type === 'json') return 'Formatted Output'
+    if (type === 'jwt') return 'Decoded Payload'
+    if (type === 'base64') return 'Decoded Output'
+    if (type === 'url') return 'Encoded / Decoded Output'
+    if (type === 'color') return 'Converted Output'
     return 'Output'
   }
 
@@ -237,9 +251,9 @@ export default function Home() {
 
           {/* Smart input demo-like block */}
           <div style={{ width: '100%', maxWidth: 800, textAlign: 'left' }}>
-            <div className={`smart-input-wrap ${smartResult ? 'has-result' : ''} ${detectStep > 0 && detectStep < 4 ? 'detecting' : ''}`} style={{ transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', padding: 20 }}>
+            <div className={`smart-input-wrap ${smartResult && !smartResult.error ? 'has-result' : ''} ${detectStep > 0 && detectStep < 4 ? 'detecting' : ''}`} style={{ transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', padding: 20 }}>
               <div className="smart-input-icon" style={{ marginTop: 4 }}>
-                {detectStep === 4 ? <Wand2 size={20} color="var(--brand)" className="slide-up-anim" /> : <Zap size={20} className={detectStep > 0 && detectStep < 4 ? 'pulse-anim' : ''} />}
+                {detectStep === 4 && smartResult && !smartResult.error ? <Wand2 size={20} color="var(--brand)" className="slide-up-anim" /> : <Zap size={20} className={detectStep > 0 && detectStep < 4 ? 'pulse-anim' : ''} />}
               </div>
               <div style={{ flex: 1, position: 'relative' }}>
                 <textarea
@@ -266,8 +280,8 @@ export default function Home() {
                 {detectStep > 0 && detectStep < 4 && (
                   <div className="detect-feedback" style={{ position: 'absolute', right: 0, bottom: -10, fontSize: 12, color: 'var(--brand)', fontWeight: 600 }}>
                     {detectStep === 1 && <span className="fade-in">⚡ Detecting...</span>}
-                    {detectStep === 2 && smartResult && <span className="fade-in">🔍 {smartResult.label} detected</span>}
-                    {detectStep === 3 && smartResult && <span className="fade-in">🚀 Processing...</span>}
+                    {detectStep === 2 && smartResult && !smartResult.error && <span className="fade-in">🔍 {smartResult.label} detected</span>}
+                    {detectStep === 3 && smartResult && !smartResult.error && <span className="fade-in">🚀 Processing...</span>}
                   </div>
                 )}
               </div>
@@ -286,7 +300,17 @@ export default function Home() {
 
             {/* ── SPLIT RESULT PANEL ── */}
             <div style={{ height: detectStep === 4 ? 'auto' : 0, overflow: 'hidden', transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-              {detectStep === 4 && smartResult && (
+              
+              {/* Fallback Error State */}
+              {detectStep === 4 && smartResult && smartResult.error && (
+                <div className="smart-panel fade-in-up" style={{ marginTop: 16, padding: '24px', textAlign: 'center', color: 'var(--t3)' }}>
+                  <Search size={24} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
+                  <p>{smartResult.error}</p>
+                </div>
+              )}
+
+              {/* Success Split Pane */}
+              {detectStep === 4 && smartResult && !smartResult.error && (
                 <div className="smart-panel" style={{ marginTop: 16 }}>
                   {/* Panel header */}
                   <div className="smart-panel-header" style={{ padding: '12px 20px' }}>
@@ -296,9 +320,10 @@ export default function Home() {
                         Detected: {smartResult.label}
                       </span>
                       <span className="smart-panel-arrow">→</span>
-                      <span className="smart-panel-action" style={{ fontWeight: 600, color: 'var(--t1)', fontSize: 13 }}>{getActionHint(smartResult.label)}</span>
+                      <span className="smart-panel-action" style={{ fontWeight: 600, color: 'var(--t1)', fontSize: 13 }}>{getActionHint(smartResult.type)}</span>
                     </div>
-                    <div style={{display:'flex',gap:8}}>
+                    
+                    <div style={{display:'flex',gap:8, alignItems: 'center'}}>
                       <button
                         className="btn sm hover-scale"
                         onClick={handleCopy}
@@ -307,20 +332,36 @@ export default function Home() {
                       >
                         {copied ? <><CheckCircle2 size={12} color="#16a34a" /> Copied ✓</> : <><Copy size={12} /> Copy result</>}
                       </button>
-                      <button
-                        className="btn primary sm hover-scale"
-                        onClick={() => navigate(`/${smartResult.toolId}`)}
-                      >
-                        <ExternalLink size={12} /> Open in {smartResult.label}
-                      </button>
+                      
+                      {/* Auto Navigation Primary Button */}
+                      {smartResult.matchedTools && smartResult.matchedTools.length > 0 && (
+                        <button
+                          className="btn primary sm hover-scale"
+                          onClick={() => handleAutoNavigate(smartResult.matchedTools[0].route)}
+                        >
+                          <ExternalLink size={12} /> Open in {smartResult.matchedTools[0].name}
+                        </button>
+                      )}
                     </div>
                   </div>
+
+                  {/* Suggestion List for multiple tools mapping to same type */}
+                  {smartResult.matchedTools && smartResult.matchedTools.length > 1 && (
+                    <div style={{ padding: '8px 20px', background: 'var(--hov)', borderBottom: '1px solid var(--bdr)', fontSize: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <span style={{ color: 'var(--t3)', fontWeight: 500 }}>Try also:</span>
+                      {smartResult.matchedTools.slice(1).map(t => (
+                        <button key={t.id} onClick={() => handleAutoNavigate(t.route)} style={{ background: 'none', border: 'none', color: 'var(--brand)', cursor: 'pointer', fontWeight: 500 }} className="hover-scale">
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Split panes */}
                   <div className="smart-panel-split fade-in-up">
                     <div className="smart-pane" style={{ background: 'var(--hov)' }}>
                       <div className="smart-pane-label" style={{ background: 'var(--inp)' }}>RAW INPUT</div>
-                      {smartResult.label === 'Hex Color' ? (
+                      {smartResult.type === 'color' ? (
                         <div style={{padding:'16px',display:'flex',flexDirection:'column',gap:12}}>
                           <div style={{ width:'100%',height:80,borderRadius:8, background:smartInput.trim(),border:'1px solid var(--bdr)' }} />
                           <pre className="smart-pane-code">{smartInput.trim()}</pre>
@@ -332,9 +373,9 @@ export default function Home() {
                     <div className="smart-panel-divider" />
                     <div className="smart-pane output-pane">
                       <div className="smart-pane-label">
-                        {getOutputLabel(smartResult.label)}
+                        {getOutputLabel(smartResult.type)}
                       </div>
-                      {smartResult.label === 'Hex Color' ? (
+                      {smartResult.type === 'color' ? (
                         <div style={{padding:'16px',display:'flex',flexDirection:'column',gap:12}}>
                           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
                             {['rgb','hsl','hex'].map(fmt => (
@@ -347,7 +388,7 @@ export default function Home() {
                           <pre className="smart-pane-code" style={{fontSize:11}}>{smartOutput}</pre>
                         </div>
                       ) : (
-                        <pre className="smart-pane-code" style={{color: smartResult.label === 'JSON' || smartResult.label === 'JWT Token' ? 'inherit' : 'var(--t1)'}}>
+                        <pre className="smart-pane-code" style={{color: smartResult.type === 'json' || smartResult.type === 'jwt' ? 'inherit' : 'var(--t1)'}}>
                           {smartOutput}
                         </pre>
                       )}
