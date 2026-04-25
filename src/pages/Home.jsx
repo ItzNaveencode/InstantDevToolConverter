@@ -248,16 +248,11 @@ export default function Home() {
                 
                 {/* Idle empty state actions & guidance */}
                 {!smartInput && (
-                  <>
-                    <div style={{ position: 'absolute', right: 0, bottom: 4 }}>
-                      <button className="btn sm ghost hover-scale" onClick={handlePaste} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--t3)' }}>
-                        <ClipboardPaste size={14} /> Paste from clipboard
-                      </button>
-                    </div>
-                    <div style={{ position: 'absolute', left: 0, bottom: -28, fontSize: 12, color: 'var(--t3)' }}>
-                      Paste anything — we'll detect and convert instantly
-                    </div>
-                  </>
+                  <div style={{ position: 'absolute', right: 0, bottom: 4 }}>
+                    <button className="btn sm ghost hover-scale" onClick={handlePaste} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--t3)' }}>
+                      <ClipboardPaste size={14} /> Paste from clipboard
+                    </button>
+                  </div>
                 )}
                 
                 {/* Dynamic Wow Factor Feedback sequence */}
@@ -275,6 +270,12 @@ export default function Home() {
                 </button>
               )}
             </div>
+
+            {!smartInput && (
+              <div style={{ marginTop: 12, paddingLeft: 4, fontSize: 13, color: 'var(--t3)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                Paste anything — we'll detect and convert instantly
+              </div>
+            )}
 
             {/* ── SPLIT RESULT PANEL ── */}
             <div style={{ height: detectStep === 4 ? 'auto' : 0, overflow: 'hidden', transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}>
