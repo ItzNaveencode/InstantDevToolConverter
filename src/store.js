@@ -7,8 +7,10 @@ const useStore = create(
       activeTool: 'json-formatter',
       searchQuery: '',
       favorites: [],
+      recentTools: [],
       sidebarOpen: true,
       toasts: [],
+      darkMode: false,
 
       setActiveTool: (toolId) => set({ activeTool: toolId }),
       setSearchQuery: (query) => set({ searchQuery: query }),
@@ -19,20 +21,30 @@ const useStore = create(
             : [...state.favorites, toolId],
         })),
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      toggleDarkMode: () => set((state) => {
+        const nextMode = !state.darkMode;
+        if (nextMode) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+        return { darkMode: nextMode };
+      }),
+      addRecentTool: (toolId) => set((state) => {
+        const filtered = state.recentTools.filter(id => id !== toolId);
+        return { recentTools: [toolId, ...filtered].slice(0, 4) };
+      }),
 
       showToast: (message) => {
         const id = Date.now()
         set((state) => ({ toasts: [...state.toasts, { id, message }] }))
         setTimeout(() => {
           set((state) => ({ toasts: state.toasts.filter(t => t.id !== id) }))
-        }, 2200)
+        }, 1500) // changed to 1.5s as requested
       },
 
       copyToClipboard: async (text) => {
         try {
           await navigator.clipboard.writeText(text)
           const { showToast } = useStore.getState()
-          showToast('Copied to clipboard!')
+          showToast('Copied ✓')
         } catch {
           // fallback
           const ta = document.createElement('textarea')
@@ -42,7 +54,7 @@ const useStore = create(
           document.execCommand('copy')
           document.body.removeChild(ta)
           const { showToast } = useStore.getState()
-          showToast('Copied to clipboard!')
+          showToast('Copied ✓')
         }
       },
     }),
@@ -50,9 +62,14 @@ const useStore = create(
       name: 'devforge-storage',
       partialize: (state) => ({
         favorites: state.favorites,
-        activeTool: state.activeTool,
-        sidebarOpen: state.sidebarOpen,
+        recentTools: state.recentTools,
+        darkMode: state.darkMode,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state && state.darkMode) {
+          document.documentElement.classList.add('dark');
+        }
+      }
     }
   )
 )

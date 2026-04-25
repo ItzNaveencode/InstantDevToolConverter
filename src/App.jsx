@@ -40,6 +40,16 @@ export default function App() {
           <span className="navbar-logo-badge">{allTools.length} tools</span>
         </Link>
         <div className="navbar-spacer" />
+        <div className="navbar-actions">
+          <button 
+            className="btn ghost sm" 
+            onClick={() => useStore.getState().toggleDarkMode()}
+            title="Toggle Dark Mode"
+            style={{ width: 32, height: 32, padding: 0, justifyContent: 'center' }}
+          >
+            {useStore(s => s.darkMode) ? '☀️' : '🌙'}
+          </button>
+        </div>
       </nav>
 
       {/* ── ROUTING ── */}

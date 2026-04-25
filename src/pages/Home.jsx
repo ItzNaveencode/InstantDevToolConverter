@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Zap, X, Copy, ExternalLink, Search, Star, ShieldCheck, Lock, Cpu, CheckCircle2 } from 'lucide-react'
+import { Zap, X, Copy, ExternalLink, Search, Star, ShieldCheck, Lock, Cpu, CheckCircle2, ClipboardPaste } from 'lucide-react'
 import useStore from '../store'
 import { toolCategories, allTools } from '../utils/toolConfig'
 import { detectInputType, computeOutput } from '../utils/smartLogic'
@@ -36,7 +36,7 @@ function ToolCard({ tool }) {
         <div className="tool-card-icon" style={{ background: h2r(color, 0.1), color }}>
           <Icon size={18} />
         </div>
-        {isPopular && <div style={{ fontSize: 9, fontWeight: 700, color: '#fff', background: 'var(--brand)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.5, textTransform: 'uppercase' }}>Popular</div>}
+        {isPopular && <div style={{ fontSize: 9, fontWeight: 700, color: '#fff', background: '#f97316', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.5, textTransform: 'uppercase' }}>🔥 Most Used</div>}
       </div>
       <div className="tool-card-name" style={{ marginTop: 4 }}>{tool.name}</div>
       <div className="tool-card-desc">{tool.description}</div>
@@ -46,6 +46,7 @@ function ToolCard({ tool }) {
 
 export default function Home() {
   const favorites       = useStore(s => s.favorites)
+  const recentTools     = useStore(s => s.recentTools)
   const copyToClipboard = useStore(s => s.copyToClipboard)
   const navigate        = useNavigate()
 
@@ -99,28 +100,60 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (text) setSmartInput(text)
+    } catch (e) {
+      console.error('Failed to read clipboard', e)
+    }
+  }
+
   const tabs = ['All', 'Favorites', ...toolCategories.map(c => c.name)]
 
   const getSections = () => {
     const q = search.toLowerCase().trim()
+    let baseSections = []
+    
     if (activeTab === 'Favorites') {
       const tools = allTools.filter(t => favorites.includes(t.id))
         .filter(t => !q || t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q))
-      return [{ name: 'Favorites', color: '#4f46e5', tools }]
+      baseSections.push({ name: 'Favorites', color: '#4f46e5', tools })
+      return baseSections
     }
+    
     if (activeTab !== 'All') {
       const cat = toolCategories.find(c => c.name === activeTab)
-      if (!cat) return []
-      return [{ ...cat, tools: cat.tools.filter(t => !q || t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q)) }]
+      if (cat) {
+        baseSections.push({ ...cat, tools: cat.tools.filter(t => !q || t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q)) })
+      }
+      return baseSections
     }
+    
     if (q) {
       const tools = allTools.filter(t => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q))
       return [{ name: `"${search}"`, color: '#4f46e5', tools }]
     }
-    return toolCategories
+    
+    // Default "All" view with Recent Tools at the top
+    if (recentTools && recentTools.length > 0) {
+      const recent = recentTools.map(id => allTools.find(t => t.id === id)).filter(Boolean)
+      if (recent.length > 0) {
+        baseSections.push({ name: '🧠 Recently Used Tools', color: 'var(--brand)', tools: recent })
+      }
+    }
+    return [...baseSections, ...toolCategories]
   }
 
   const sections = getSections()
+
+  const getActionHint = (label) => {
+    if (label === 'JSON') return 'Ready to format'
+    if (label === 'JWT Token') return 'Decoded instantly'
+    if (label === 'Base64') return 'Decoded instantly'
+    if (label === 'Hex Color') return 'Converted instantly'
+    return 'Preview below'
+  }
 
   return (
     <main className="home">
@@ -156,21 +189,28 @@ export default function Home() {
                 <textarea
                   ref={inputRef}
                   className="smart-input"
-                  placeholder="Paste JSON, JWT, Base64, URL… we'll detect it automatically (⌘K)"
+                  placeholder="Paste JSON, JWT, Base64, URL… we'll detect it instantly"
                   value={smartInput}
                   onChange={e => setSmartInput(e.target.value)}
                   rows={smartResult ? 2 : 3}
                   spellCheck={false}
                   style={{ fontSize: 15, paddingRight: 40 }}
                 />
+                {!smartInput && (
+                  <div style={{ position: 'absolute', right: 0, bottom: 4 }}>
+                    <button className="btn sm ghost" onClick={handlePaste} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--t3)' }}>
+                      <ClipboardPaste size={14} /> Paste from clipboard
+                    </button>
+                  </div>
+                )}
                 {isDetecting && (
-                  <div style={{ position: 'absolute', right: 0, bottom: -10, fontSize: 11, color: 'var(--brand)', fontWeight: 600, animation: 'fadeIn 0.2s' }}>
-                    Detecting format...
+                  <div style={{ position: 'absolute', right: 0, bottom: -10, fontSize: 12, color: 'var(--brand)', fontWeight: 600, animation: 'fadeIn 0.2s' }}>
+                    Detecting...
                   </div>
                 )}
               </div>
               {smartInput && !isDetecting && (
-                <button className="smart-clear" onClick={() => setSmartInput('')} style={{ top: 18, right: 18 }}>
+                <button className="smart-clear" onClick={() => { setSmartInput(''); setSmartResult(null); setSmartOutput(''); }} style={{ top: 18, right: 18, background: 'var(--card)' }} title="Clear input">
                   <X size={16} />
                 </button>
               )}
@@ -181,14 +221,14 @@ export default function Home() {
               {smartResult && !isDetecting && (
                 <div className="smart-panel" style={{ marginTop: 16 }}>
                   {/* Panel header */}
-                  <div className="smart-panel-header">
+                  <div className="smart-panel-header" style={{ padding: '12px 20px' }}>
                     <div className="smart-panel-detected" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: `${smartResult.color}15`, color: smartResult.color, padding: '4px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6, background: `${smartResult.color}15`, color: smartResult.color, padding: '4px 12px', borderRadius: 999, fontSize: 13, fontWeight: 600 }}>
                         <span className="smart-panel-dot" style={{ background: smartResult.color }} />
-                        Detected: {smartResult.label}
+                        🔍 Detected: {smartResult.label}
                       </span>
                       <span className="smart-panel-arrow">→</span>
-                      <span className="smart-panel-action" style={{ fontWeight: 500, color: 'var(--t1)' }}>Processed instantly</span>
+                      <span className="smart-panel-action" style={{ fontWeight: 600, color: 'var(--t1)', fontSize: 13 }}>{getActionHint(smartResult.label)}</span>
                     </div>
                     <div style={{display:'flex',gap:8}}>
                       <button
@@ -230,7 +270,7 @@ export default function Home() {
                     <div className="smart-panel-divider" />
 
                     {/* OUTPUT pane */}
-                    <div className="smart-pane" style={{ background: '#fff' }}>
+                    <div className="smart-pane" style={{ background: 'var(--card)' }}>
                       <div className="smart-pane-label" style={{color: smartResult.color, background: 'var(--inp)'}}>
                         DECODED OUTPUT
                       </div>
@@ -307,7 +347,7 @@ export default function Home() {
         {sections.map(group => (
           <div className="category-card" key={group.name}>
             <div className="category-head">
-              <span className="category-head-title">{group.name}</span>
+              <span className="category-head-title" style={{ color: group.name.includes('Recently') ? 'var(--brand)' : 'var(--t1)' }}>{group.name}</span>
               <span className="category-head-count">{group.tools.length} tool{group.tools.length !== 1 ? 's' : ''}</span>
             </div>
             {group.tools.length === 0 ? (

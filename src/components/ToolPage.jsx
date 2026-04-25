@@ -45,6 +45,12 @@ const MAP = {
 export default function ToolPage({ tool }) {
   const Comp = MAP[tool.id]
   const Icon = tool.icon
+  const addRecentTool = useStore(s => s.addRecentTool)
+
+  React.useEffect(() => {
+    addRecentTool(tool.id)
+  }, [tool.id, addRecentTool])
+
   return (
     <div className="tool-page tool-enter" key={tool.id}>
       <div className="tool-page-header">
