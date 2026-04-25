@@ -60,7 +60,6 @@ export default function Home() {
   const [search, setSearch]         = useState('')
   const [activeTab, setActiveTab]   = useState('All')
   
-  // Sticky experience: restore last input
   const [smartInput, setSmartInput] = useState(lastSmartInput || '')
   
   const [smartResult, setSmartResult] = useState(null)
@@ -69,10 +68,7 @@ export default function Home() {
   const inputRef = useRef(null)
 
   // Detection Flow State
-  // 0 = Idle, 1 = Detecting, 2 = Type Detected, 3 = Decoding, 4 = Done
   const [detectStep, setDetectStep] = useState(0)
-
-  // Live Auto Demo State
   const [demoIdx, setDemoIdx] = useState(0)
 
   useEffect(() => {
@@ -87,18 +83,16 @@ export default function Home() {
     return () => window.removeEventListener('keydown', h)
   }, [])
 
-  // Auto-loop demo
   useEffect(() => {
-    if (smartInput) return // stop demo if user types
+    if (smartInput) return 
     const timer = setInterval(() => {
       setDemoIdx(i => (i + 1) % DEMO_EXAMPLES.length)
     }, 3500)
     return () => clearInterval(timer)
   }, [smartInput])
 
-  // Smart Input Detection Flow
   useEffect(() => {
-    setLastSmartInput(smartInput) // sticky save
+    setLastSmartInput(smartInput) 
     
     if (!smartInput.trim()) {
       setSmartResult(null)
@@ -107,8 +101,7 @@ export default function Home() {
       return
     }
     
-    // Wow factor animation sequence
-    setDetectStep(1) // ⚡ Detecting...
+    setDetectStep(1)
     
     const t1 = setTimeout(() => {
       const result = detectInputType(smartInput)
@@ -120,17 +113,17 @@ export default function Home() {
       }
       
       setSmartResult(result)
-      setDetectStep(2) // → Type Detected
+      setDetectStep(2) 
       
       const t2 = setTimeout(() => {
-        setDetectStep(3) // → Decoding...
+        setDetectStep(3) 
         
         const t3 = setTimeout(() => {
           setSmartOutput(computeOutput(smartInput, result.label))
-          setDetectStep(4) // Done
-        }, 150)
-      }, 200)
-    }, 150)
+          setDetectStep(4) 
+        }, 250)
+      }, 250)
+    }, 250)
 
     return () => { clearTimeout(t1) }
   }, [smartInput, setLastSmartInput])
@@ -138,7 +131,7 @@ export default function Home() {
   const handleCopy = () => {
     copyToClipboard(smartOutput)
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setTimeout(() => setCopied(false), 1500)
   }
 
   const handlePaste = async () => {
@@ -188,13 +181,25 @@ export default function Home() {
   const sections = getSections()
 
   const getActionHint = (label) => {
-    if (label === 'JSON') return 'Ready to format'
+    if (label === 'JSON') return 'Formatted instantly'
     if (label === 'JWT Token') return 'Decoded instantly'
     if (label === 'Base64') return 'Decoded instantly'
     if (label === 'Hex Color') return 'Converted instantly'
     if (label === 'Cron Expression') return 'Parsed instantly'
     if (label === 'Unix Timestamp') return 'Converted instantly'
-    return 'Preview below'
+    if (label === 'Markdown') return 'Preview ready'
+    if (label === 'URL') return 'Parsed instantly'
+    return 'Preview ready'
+  }
+
+  const getOutputLabel = (label) => {
+    if (label === 'Markdown') return 'Preview'
+    if (label === 'JSON') return 'Formatted Output'
+    if (label === 'JWT Token') return 'Decoded Payload'
+    if (label === 'Base64') return 'Decoded Output'
+    if (label === 'URL') return 'Encoded / Decoded Output'
+    if (label === 'Hex Color') return 'Converted Output'
+    return 'Output'
   }
 
   const currentDemo = DEMO_EXAMPLES[demoIdx]
@@ -241,13 +246,18 @@ export default function Home() {
                   style={{ fontSize: 15, paddingRight: 40 }}
                 />
                 
-                {/* Idle empty state actions */}
+                {/* Idle empty state actions & guidance */}
                 {!smartInput && (
-                  <div style={{ position: 'absolute', right: 0, bottom: 4 }}>
-                    <button className="btn sm ghost hover-scale" onClick={handlePaste} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--t3)' }}>
-                      <ClipboardPaste size={14} /> Paste from clipboard
-                    </button>
-                  </div>
+                  <>
+                    <div style={{ position: 'absolute', right: 0, bottom: 4 }}>
+                      <button className="btn sm ghost hover-scale" onClick={handlePaste} style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--t3)' }}>
+                        <ClipboardPaste size={14} /> Paste from clipboard
+                      </button>
+                    </div>
+                    <div style={{ position: 'absolute', left: 0, bottom: -28, fontSize: 12, color: 'var(--t3)' }}>
+                      Paste anything — we'll detect and convert instantly
+                    </div>
+                  </>
                 )}
                 
                 {/* Dynamic Wow Factor Feedback sequence */}
@@ -259,8 +269,8 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              {smartInput && detectStep === 4 && (
-                <button className="smart-clear hover-scale" onClick={() => { setSmartInput(''); setSmartResult(null); setSmartOutput(''); setDetectStep(0); }} style={{ top: 18, right: 18, background: 'var(--card)' }} title="Clear input">
+              {smartInput && (
+                <button className="smart-clear hover-scale" onClick={() => { setSmartInput(''); setSmartResult(null); setSmartOutput(''); setDetectStep(0); }} title="Clear input">
                   <X size={16} />
                 </button>
               )}
@@ -312,9 +322,9 @@ export default function Home() {
                       )}
                     </div>
                     <div className="smart-panel-divider" />
-                    <div className="smart-pane" style={{ background: 'var(--card)' }}>
-                      <div className="smart-pane-label" style={{color: smartResult.color, background: 'var(--inp)'}}>
-                        DECODED OUTPUT
+                    <div className="smart-pane output-pane">
+                      <div className="smart-pane-label">
+                        {getOutputLabel(smartResult.label)}
                       </div>
                       {smartResult.label === 'Hex Color' ? (
                         <div style={{padding:'16px',display:'flex',flexDirection:'column',gap:12}}>
@@ -341,7 +351,7 @@ export default function Home() {
 
             {/* Smart Auto Demo or Showcase (only when empty) */}
             {!smartInput && (
-              <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
                 
                 {/* Showcase Engine Power */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap', fontSize: 13, color: 'var(--t3)' }}>
