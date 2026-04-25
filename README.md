@@ -97,21 +97,6 @@ No switching tools. No thinking. Just results.
 
 ---
 
-## 📸 Screenshots
-
-### 🔍 Smart Input Detection
-![Smart Input](./screenshots/input.png)
-
-### ⚡ Instant JWT Detection
-![JWT Detection](./screenshots/jwt.png)
-
-### 🧰 Tool Grid
-![Tools](./screenshots/tools.png)
-
-### 📦 QR Generator Example
-![QR Tool](./screenshots/qr.png)
-
----
 
 ## 🧱 Tech Stack
 
