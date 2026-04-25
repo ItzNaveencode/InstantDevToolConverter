@@ -18,7 +18,7 @@ export default function Base64Page() {
   }
 
   return (
-    <div className="seo-page-wrapper">
+    <div className="app" style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       <Helmet>
         <title>Base64 Encode & Decode Tool Online – InstantConverters</title>
         <meta name="description" content="Encode or decode Base64 strings securely and instantly in your browser. Fast, private, and real-time Base64 conversion tool." />
@@ -29,19 +29,24 @@ export default function Base64Page() {
       </Helmet>
 
       {/* Visible SEO Content (above tool) */}
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px', paddingTop: 24 }}>
+      <div style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '0 auto', padding: '24px 24px 0' }}>
         <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--t1)', marginBottom: 8 }}>
           Base64 Decoder & Encoder
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 24, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 0, lineHeight: 1.5 }}>
           Encode or decode Base64 strings securely and instantly in your browser. Fast, private, and real-time Base64 conversion tool.
         </p>
       </div>
 
-      <ToolPage tool={tool} />
+      {/* Tool Container (fixed height so flexbox children don't collapse) */}
+      <div style={{ flexShrink: 0, height: '75vh', minHeight: 600, display: 'flex', flexDirection: 'column', maxWidth: 1200, width: '100%', margin: '0 auto', padding: '16px 0' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', border: '1px solid var(--bdr)', borderRadius: 'var(--r-lg)', overflow: 'hidden', backgroundColor: 'var(--bg)' }}>
+          <ToolPage tool={tool} />
+        </div>
+      </div>
 
       {/* SEO Content Sections (below tool) */}
-      <section style={{ maxWidth: 1000, margin: '40px auto 0', padding: '0 24px' }} className="space-y-4 seo-content-section">
+      <section style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '24px auto 0', padding: '0 24px' }} className="space-y-4 seo-content-section">
         <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--t1)', marginBottom: 8 }}>What is a Base64 Decoder & Encoder?</h2>
         <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 24, lineHeight: 1.6 }}>
           {"Base64 encoding converts binary or text data into an ASCII string format. It is widely used to embed image data, encode API keys, or safely transmit data across text-based protocols."}
@@ -59,7 +64,7 @@ export default function Base64Page() {
       </section>
 
       {/* Internal Linking (below tool) */}
-      <div style={{ maxWidth: 1000, margin: '40px auto', padding: '24px', borderTop: '1px solid var(--bdr)' }}>
+      <div style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '40px auto', padding: '24px', borderTop: '1px solid var(--bdr)' }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)', marginBottom: 16 }}>More Developer Tools</h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
           <Link to="/json-to-ts" style={{ fontSize: 13, color: 'var(--brand)', textDecoration: 'none' }}>Try JSON → TypeScript →</Link>

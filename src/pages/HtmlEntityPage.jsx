@@ -18,7 +18,7 @@ export default function HtmlEntityPage() {
   }
 
   return (
-    <div className="seo-page-wrapper">
+    <div className="app" style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       <Helmet>
         <title>HTML Entity Encoder / Decoder (Instant) – InstantConverters</title>
         <meta name="description" content="Escape and unescape HTML entities to prevent XSS. Fast, real-time string conversion for safe rendering in web applications." />
@@ -29,19 +29,24 @@ export default function HtmlEntityPage() {
       </Helmet>
 
       {/* Visible SEO Content (above tool) */}
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px', paddingTop: 24 }}>
+      <div style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '0 auto', padding: '24px 24px 0' }}>
         <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--t1)', marginBottom: 8 }}>
           HTML Entities
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 24, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 0, lineHeight: 1.5 }}>
           Escape and unescape HTML entities to prevent XSS. Fast, real-time string conversion for safe rendering in web applications.
         </p>
       </div>
 
-      <ToolPage tool={tool} />
+      {/* Tool Container (fixed height so flexbox children don't collapse) */}
+      <div style={{ flexShrink: 0, height: '75vh', minHeight: 600, display: 'flex', flexDirection: 'column', maxWidth: 1200, width: '100%', margin: '0 auto', padding: '16px 0' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', border: '1px solid var(--bdr)', borderRadius: 'var(--r-lg)', overflow: 'hidden', backgroundColor: 'var(--bg)' }}>
+          <ToolPage tool={tool} />
+        </div>
+      </div>
 
       {/* SEO Content Sections (below tool) */}
-      <section style={{ maxWidth: 1000, margin: '40px auto 0', padding: '0 24px' }} className="space-y-4 seo-content-section">
+      <section style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '24px auto 0', padding: '0 24px' }} className="space-y-4 seo-content-section">
         <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--t1)', marginBottom: 8 }}>What is a HTML Entities?</h2>
         <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 24, lineHeight: 1.6 }}>
           {"HTML Entity escaping converts special characters (like < and >) into safely renderable text equivalents (like &lt; and &gt;), preventing browser injection and XSS vulnerabilities."}
@@ -59,7 +64,7 @@ export default function HtmlEntityPage() {
       </section>
 
       {/* Internal Linking (below tool) */}
-      <div style={{ maxWidth: 1000, margin: '40px auto', padding: '24px', borderTop: '1px solid var(--bdr)' }}>
+      <div style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '40px auto', padding: '24px', borderTop: '1px solid var(--bdr)' }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)', marginBottom: 16 }}>More Developer Tools</h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
           <Link to="/line-tools" style={{ fontSize: 13, color: 'var(--brand)', textDecoration: 'none' }}>Try Sort & Dedupe Lines →</Link>

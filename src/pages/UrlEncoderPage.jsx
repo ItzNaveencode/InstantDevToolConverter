@@ -18,7 +18,7 @@ export default function UrlEncoderPage() {
   }
 
   return (
-    <div className="seo-page-wrapper">
+    <div className="app" style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       <Helmet>
         <title>Free URL Encoder & Decoder Online – InstantConverters</title>
         <meta name="description" content="Encode or decode URL strings safely. Essential web tool for parsing queries, escaping special characters, and testing HTTP requests." />
@@ -29,19 +29,24 @@ export default function UrlEncoderPage() {
       </Helmet>
 
       {/* Visible SEO Content (above tool) */}
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px', paddingTop: 24 }}>
+      <div style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '0 auto', padding: '24px 24px 0' }}>
         <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--t1)', marginBottom: 8 }}>
           URL Encoder & Decoder
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 24, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 0, lineHeight: 1.5 }}>
           Encode or decode URL strings safely. Essential web tool for parsing queries, escaping special characters, and testing HTTP requests.
         </p>
       </div>
 
-      <ToolPage tool={tool} />
+      {/* Tool Container (fixed height so flexbox children don't collapse) */}
+      <div style={{ flexShrink: 0, height: '75vh', minHeight: 600, display: 'flex', flexDirection: 'column', maxWidth: 1200, width: '100%', margin: '0 auto', padding: '16px 0' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', border: '1px solid var(--bdr)', borderRadius: 'var(--r-lg)', overflow: 'hidden', backgroundColor: 'var(--bg)' }}>
+          <ToolPage tool={tool} />
+        </div>
+      </div>
 
       {/* SEO Content Sections (below tool) */}
-      <section style={{ maxWidth: 1000, margin: '40px auto 0', padding: '0 24px' }} className="space-y-4 seo-content-section">
+      <section style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '24px auto 0', padding: '0 24px' }} className="space-y-4 seo-content-section">
         <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--t1)', marginBottom: 8 }}>What is a URL Encoder & Decoder?</h2>
         <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 24, lineHeight: 1.6 }}>
           {"URL encoding (percent-encoding) converts special characters into a format that can be safely transmitted over the Internet. It prevents special characters from breaking HTTP requests."}
@@ -59,7 +64,7 @@ export default function UrlEncoderPage() {
       </section>
 
       {/* Internal Linking (below tool) */}
-      <div style={{ maxWidth: 1000, margin: '40px auto', padding: '24px', borderTop: '1px solid var(--bdr)' }}>
+      <div style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '40px auto', padding: '24px', borderTop: '1px solid var(--bdr)' }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)', marginBottom: 16 }}>More Developer Tools</h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
           <Link to="/json-to-ts" style={{ fontSize: 13, color: 'var(--brand)', textDecoration: 'none' }}>Try JSON → TypeScript →</Link>

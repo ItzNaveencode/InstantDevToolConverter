@@ -18,7 +18,7 @@ export default function PasswordPage() {
   }
 
   return (
-    <div className="seo-page-wrapper">
+    <div className="app" style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       <Helmet>
         <title>Secure Password Generator (Local) – InstantConverters</title>
         <meta name="description" content="Create highly secure, randomized passwords locally in your browser. Fast, safe generation of symbols, numbers, and strings." />
@@ -29,19 +29,24 @@ export default function PasswordPage() {
       </Helmet>
 
       {/* Visible SEO Content (above tool) */}
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px', paddingTop: 24 }}>
+      <div style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '0 auto', padding: '24px 24px 0' }}>
         <h1 style={{ fontSize: 24, fontWeight: 600, color: 'var(--t1)', marginBottom: 8 }}>
           Password Generator
         </h1>
-        <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 24, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 0, lineHeight: 1.5 }}>
           Create highly secure, randomized passwords locally in your browser. Fast, safe generation of symbols, numbers, and strings.
         </p>
       </div>
 
-      <ToolPage tool={tool} />
+      {/* Tool Container (fixed height so flexbox children don't collapse) */}
+      <div style={{ flexShrink: 0, height: '75vh', minHeight: 600, display: 'flex', flexDirection: 'column', maxWidth: 1200, width: '100%', margin: '0 auto', padding: '16px 0' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', border: '1px solid var(--bdr)', borderRadius: 'var(--r-lg)', overflow: 'hidden', backgroundColor: 'var(--bg)' }}>
+          <ToolPage tool={tool} />
+        </div>
+      </div>
 
       {/* SEO Content Sections (below tool) */}
-      <section style={{ maxWidth: 1000, margin: '40px auto 0', padding: '0 24px' }} className="space-y-4 seo-content-section">
+      <section style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '24px auto 0', padding: '0 24px' }} className="space-y-4 seo-content-section">
         <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--t1)', marginBottom: 8 }}>What is a Password Generator?</h2>
         <p style={{ fontSize: 14, color: 'var(--t3)', marginBottom: 24, lineHeight: 1.6 }}>
           {"A secure password generator creates strong, unpredictable strings containing uppercase, lowercase, numbers, and symbols to protect accounts from brute-force attacks."}
@@ -59,7 +64,7 @@ export default function PasswordPage() {
       </section>
 
       {/* Internal Linking (below tool) */}
-      <div style={{ maxWidth: 1000, margin: '40px auto', padding: '24px', borderTop: '1px solid var(--bdr)' }}>
+      <div style={{ flexShrink: 0, maxWidth: 1200, width: '100%', margin: '40px auto', padding: '24px', borderTop: '1px solid var(--bdr)' }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--t1)', marginBottom: 16 }}>More Developer Tools</h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
           <Link to="/number-base" style={{ fontSize: 13, color: 'var(--brand)', textDecoration: 'none' }}>Try Number Base Converter →</Link>
