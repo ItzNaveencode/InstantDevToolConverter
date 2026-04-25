@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Editor from '@monaco-editor/react'
-import { Pane, CopyBtn } from '../components/ToolPage'
-import useStore from '../store'
+import { Pane, CopyBtn } from '../ToolPage'
+import useStore from '../../store'
 
 // ── Regex Tester ──────────────────────────────────
 export function RegexTester() {

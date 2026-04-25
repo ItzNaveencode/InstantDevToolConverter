@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ArrowRightLeft } from 'lucide-react'
-import { Pane, CopyBtn } from '../components/ToolPage'
+import { Pane, CopyBtn } from '../ToolPage'
 
 export default function Base64Encoder() {
   const [input, setInput] = useState('')

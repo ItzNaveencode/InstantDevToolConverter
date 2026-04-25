@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Pane, CopyBtn } from '../components/ToolPage'
-import useStore from '../store'
+import { Pane, CopyBtn } from '../ToolPage'
+import useStore from '../../store'
 
 export function HashGenerator() {
   const [input, setInput] = useState('hello devforge')

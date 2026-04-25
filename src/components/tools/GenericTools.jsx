@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import Editor from '@monaco-editor/react'
 import QRCode from 'qrcode'
 import { marked } from 'marked'
-import { Pane, CopyBtn } from '../components/ToolPage'
-import useStore from '../store'
+import { Pane, CopyBtn } from '../ToolPage'
+import useStore from '../../store'
 
 export function UrlEncoder() {
   const [input, setInput] = useState('hello world & foo=bar')

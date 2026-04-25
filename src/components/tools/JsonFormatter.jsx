@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Editor from '@monaco-editor/react'
-import { Pane, CopyBtn } from '../components/ToolPage'
+import { Pane, CopyBtn } from '../ToolPage'
 
 export default function JsonFormatter() {
   const [input, setInput] = useState('{\n  "name": "InstantDevToolConverter",\n  "version": "1.0",\n  "tools": 24,\n  "free": true,\n  "private": true\n}')

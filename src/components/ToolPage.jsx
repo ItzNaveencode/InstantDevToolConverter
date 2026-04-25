@@ -1,17 +1,18 @@
 import { ArrowLeft } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import useStore from '../store'
-import JsonFormatter from '../tools/JsonFormatter'
-import Base64Encoder from '../tools/Base64Encoder'
+import JsonFormatter from './tools/JsonFormatter'
+import Base64Encoder from './tools/Base64Encoder'
 import {
   UrlEncoder, HtmlEntity, MarkdownPreviewTool, WordCounter,
   UuidGenerator, QrCodeTool, TimestampConverter, StringCase,
   NumberBase, JwtDecoderTool
-} from '../tools/GenericTools'
-import { HashGenerator, LoremIpsum, ColorConverter, UrlParser } from '../tools/GenericTools2'
+} from './tools/GenericTools'
+import { HashGenerator, LoremIpsum, ColorConverter, UrlParser } from './tools/GenericTools2'
 import {
   RegexTester, TextDiff, PasswordGenerator, LineSortDedupe,
   TextEscape, XmlFormatter, JsonToTs, ImageBase64
-} from '../tools/GenericTools3'
+} from './tools/GenericTools3'
 
 const MAP = {
   'json-formatter':   JsonFormatter,
@@ -40,15 +41,15 @@ const MAP = {
   'image-base64':     ImageBase64,
 }
 
-export default function ToolPage({ tool, onBack }) {
+export default function ToolPage({ tool }) {
   const Comp = MAP[tool.id]
   const Icon = tool.icon
   return (
     <div className="tool-page tool-enter" key={tool.id}>
       <div className="tool-page-header">
-        <button className="back-btn" onClick={onBack}>
+        <Link to="/" className="back-btn" style={{ textDecoration: 'none' }}>
           <ArrowLeft size={14} /> All Tools
-        </button>
+        </Link>
         <div className="tool-page-divider" />
         <div className="tool-page-icon" style={{ color: tool.iconColor || 'var(--brand)' }}><Icon size={18} /></div>
         <div>
