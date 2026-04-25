@@ -11,9 +11,11 @@ const useStore = create(
       sidebarOpen: true,
       toasts: [],
       darkMode: false,
+      lastSmartInput: '',
 
       setActiveTool: (toolId) => set({ activeTool: toolId }),
       setSearchQuery: (query) => set({ searchQuery: query }),
+      setLastSmartInput: (val) => set({ lastSmartInput: val }),
       toggleFavorite: (toolId) =>
         set((state) => ({
           favorites: state.favorites.includes(toolId)
@@ -64,6 +66,7 @@ const useStore = create(
         favorites: state.favorites,
         recentTools: state.recentTools,
         darkMode: state.darkMode,
+        lastSmartInput: state.lastSmartInput,
       }),
       onRehydrateStorage: () => (state) => {
         if (state && state.darkMode) {
