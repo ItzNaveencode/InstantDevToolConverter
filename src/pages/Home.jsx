@@ -102,8 +102,10 @@ export default function Home() {
     }
     
     setDetectStep(1)
+    let isActive = true;
     
     const t1 = setTimeout(() => {
+      if (!isActive) return;
       const result = detectInputType(smartInput)
       if (!result) {
         setSmartResult(null)
@@ -115,17 +117,22 @@ export default function Home() {
       setSmartResult(result)
       setDetectStep(2) 
       
-      const t2 = setTimeout(() => {
+      setTimeout(() => {
+        if (!isActive) return;
         setDetectStep(3) 
         
-        const t3 = setTimeout(() => {
+        setTimeout(() => {
+          if (!isActive) return;
           setSmartOutput(computeOutput(smartInput, result.label))
           setDetectStep(4) 
         }, 250)
       }, 250)
     }, 250)
 
-    return () => { clearTimeout(t1) }
+    return () => { 
+      isActive = false;
+      clearTimeout(t1);
+    }
   }, [smartInput, setLastSmartInput])
 
   const handleCopy = () => {
