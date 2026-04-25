@@ -1,3 +1,4 @@
+import React, { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import useStore from '../store'
@@ -82,9 +83,17 @@ export function Pane({ title, actions, children, style }) {
 
 export function CopyBtn({ text, label = 'Copy' }) {
   const copy = useStore(s => s.copyToClipboard)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    copy(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
-    <button className="btn sm ghost" onClick={() => copy(text)}>
-      {label}
+    <button className="btn sm ghost" onClick={handleCopy} style={{ minWidth: 60, justifyContent: 'center', transition: 'all 0.2s' }}>
+      {copied ? <span style={{ color: '#16a34a', display: 'flex', alignItems: 'center', gap: 4 }}>Copied ✓</span> : label}
     </button>
   )
 }
